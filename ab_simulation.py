@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from scipy.stats import chi2
+from scipy.stats import chi2, norm
 
 
 def histogram(parameters):
@@ -24,11 +24,12 @@ def run_simulation():
     baseline_odds = 0.01
     test_odds_delta = 0
     alpha = 0.05
-    beta = 0.8
+    beta = 0.2
     minimum_effect_size = 0.005
 
     # f(alpha, beta, baseline_odds, minimum_effect_size) = samples_per_trial
-    samples_per_trial = 6658
+    # http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power_print.html
+    samples_per_trial = int(2 * baseline_odds * (1 - baseline_odds) * ((norm.ppf(1-alpha/2) + norm.ppf(1-beta)) / minimum_effect_size)**2)
 
     # number of experiments to run
     total_trials = 100
@@ -38,11 +39,11 @@ def run_simulation():
     # -----------------------------------
     # |         | test | control | TOTAL
     # -----------------------------------
-    # | heads   | 50    | 50    | 100
+    # | heads   | 50    | 50     | 100
     # -----------------------------------
-    # | tails   | 50    | 50    | 100
+    # | tails   | 50    | 50     | 100
     # -----------------------------------
-    # | TOTAL   | 100   | 100   | 200
+    # | TOTAL   | 100   | 100    | 200
     #
     # degrees of freedom: (r - 1)(c - 1) = (2 - 1)(2 - 1) = 1
     degrees_of_freedom = 1
@@ -99,10 +100,12 @@ def main():
                   'yLabel': 'Counts',
                   'title': 'A/B Experiments'}
 
-    for runs in range(2000):
+    for runs in range(100):
         false_positives = run_simulation()
         simulation['data'].append(false_positives)
 
+    average = sum(simulation['data']) / len(simulation['data'])
+    print("Mean false positives per run: %s" % average)
     histogram(simulation)
 
 
