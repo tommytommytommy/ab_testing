@@ -18,21 +18,24 @@ def histogram(parameters):
     plt.show()
 
 
-def run_simulation():
-
-    # a/b experiment parameters
-    baseline_odds = 0.01
-    test_odds_delta = 0
-    alpha = 0.05
-    beta = 0.2
-    minimum_effect_size = 0.005
+# run_simulation()
+# simulate an A/B experiment by modeling a series of coin flips (draw samples from a binomial distribution)
+#
+# inputs
+#   baseline_odds: float between 0 and 1; the control threshold for heads
+#   test_odds_delta: float between 0 and 1; baseline_odds + test_odds_delta indicates the test threshold for heads
+#   alpha: float between 0 and 1; false positive rate
+#   beta: float between 0 and 1; false negative rate
+#   minimum_effect_size: float between 0 and 1; min. desired effect size to detect if the control and treatment are different
+#   total_trials: integer; total number of trials to run (each trial draws a dynamically calculated number of samples)
+#
+# outputs
+#   significant_differences: the number of trials that resulted in a statistically different number of heads
+def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, minimum_effect_size=0.005, total_trials=100):
 
     # f(alpha, beta, baseline_odds, minimum_effect_size) = samples_per_trial
     # http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power_print.html
     samples_per_trial = int(2 * baseline_odds * (1 - baseline_odds) * ((norm.ppf(1-alpha/2) + norm.ppf(1-beta)) / minimum_effect_size)**2)
-
-    # number of experiments to run
-    total_trials = 100
 
     # chi-squared inputs
     # expected counts, assuming independence
@@ -48,7 +51,7 @@ def run_simulation():
     # degrees of freedom: (r - 1)(c - 1) = (2 - 1)(2 - 1) = 1
     degrees_of_freedom = 1
 
-    false_positives = 0
+    significant_differences = 0
 
     for _ in range(total_trials):
 
@@ -80,33 +83,66 @@ def run_simulation():
 
         X_2 = X_2_control_heads + X_2_control_tails + X_2_test_heads + X_2_test_tails
 
-        p = chi2.isf(X_2, degrees_of_freedom)
-        significant = p < 0.05
+        p = chi2.sf(X_2, degrees_of_freedom)
+        significant = p < alpha
 
         if significant:
-            false_positives += 1
+            significant_differences += 1
 
-    # number of times that the experiment produced a false positive--there was no difference between the test and the
-    # control, but the experiment suggests that there is
-    print("False positives: %s / %s = %s" % (false_positives, total_trials, false_positives / total_trials))
-    return false_positives
+    return significant_differences
 
 
 def main():
 
-    simulation = {'data': [], 'bins': 100,
-                  'figure': 0,
-                  'xLabel': 'False positives',
+    # number of trials to perform for each simulation
+    total_trials = 100
+
+    # number of times to run the simulation
+    total_runs = 100
+
+    # false_positives_simulation = {'data': [], 'bins': 100,
+    #               'figure': 0,
+    #               'xLabel': 'False positives',
+    #               'yLabel': 'Counts',
+    #               'title': 'A/B Experiments'}
+    #
+    # # false positives exploration
+    # for runs in range(total_runs):
+    #     significant = run_simulation(
+    #         baseline_odds=0.01,
+    #         test_odds_delta=0,
+    #         alpha=0.05,
+    #         beta=0.2,
+    #         minimum_effect_size=0.005,
+    #         total_trials=total_trials
+    #     )
+    #     false_positives_simulation['data'].append(significant)
+    #
+    # average = sum(false_positives_simulation['data']) / len(false_positives_simulation['data'])
+    # print("Mean false positives per run: %s" % average)
+    # histogram(false_positives_simulation)
+
+    # false negatives exploration
+    false_negatives_simulation = {'data': [], 'bins': 100,
+                  'figure': 1,
+                  'xLabel': 'False negatives',
                   'yLabel': 'Counts',
                   'title': 'A/B Experiments'}
 
-    for runs in range(100):
-        false_positives = run_simulation()
-        simulation['data'].append(false_positives)
+    for runs in range(total_runs):
+        significant = run_simulation(
+            baseline_odds=0.01,
+            test_odds_delta=0.005,
+            alpha=0.05,
+            beta=0.2,
+            minimum_effect_size=0.005,
+            total_trials=total_trials
+        )
+        false_negatives_simulation['data'].append(total_trials - significant)
 
-    average = sum(simulation['data']) / len(simulation['data'])
-    print("Mean false positives per run: %s" % average)
-    histogram(simulation)
+    average = sum(false_negatives_simulation['data']) / len(false_negatives_simulation['data'])
+    print("Mean false negatives per run: %s" % average)
+    histogram(false_negatives_simulation)
 
 
 if __name__ == "__main__":
