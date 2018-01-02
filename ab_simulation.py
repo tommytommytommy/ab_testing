@@ -15,8 +15,6 @@ def histogram(parameters):
     plt.ylabel(parameters['yLabel'])
     plt.suptitle(parameters['title'])
     plt.bar(center, hist, align='center', width=width)
-    plt.show()
-
 
 # run_simulation()
 # simulate an A/B experiment by modeling a series of coin flips (draw samples from a binomial distribution)
@@ -94,33 +92,36 @@ def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, 
 
 def main():
 
-    # number of trials to perform for each simulation
+    # number of trials to perform for each simulation; each
+    # trial draws SAMPLE_SIZE samples (dynamically calculated based on A/B experiment parameters)
     total_trials = 100
 
-    # number of times to run the simulation
+    # number of times to run the simulation; each run contains total_trials number of trials
+    # multiple runs allow us to observe the variance in false positives/negatives across runs
+    # on average, the number of false positives/negatives should correspond with the selected alpha/beta values
     total_runs = 100
 
-    # false_positives_simulation = {'data': [], 'bins': 100,
-    #               'figure': 0,
-    #               'xLabel': 'False positives',
-    #               'yLabel': 'Counts',
-    #               'title': 'A/B Experiments'}
-    #
-    # # false positives exploration
-    # for runs in range(total_runs):
-    #     significant = run_simulation(
-    #         baseline_odds=0.01,
-    #         test_odds_delta=0,
-    #         alpha=0.05,
-    #         beta=0.2,
-    #         minimum_effect_size=0.005,
-    #         total_trials=total_trials
-    #     )
-    #     false_positives_simulation['data'].append(significant)
-    #
-    # average = sum(false_positives_simulation['data']) / len(false_positives_simulation['data'])
-    # print("Mean false positives per run: %s" % average)
-    # histogram(false_positives_simulation)
+    false_positives_simulation = {'data': [], 'bins': 100,
+                  'figure': 0,
+                  'xLabel': 'False positives',
+                  'yLabel': 'Counts',
+                  'title': 'A/B Experiments'}
+
+    # false positives exploration
+    for runs in range(total_runs):
+        significant = run_simulation(
+            baseline_odds=0.01,
+            test_odds_delta=0,
+            alpha=0.05,
+            beta=0.2,
+            minimum_effect_size=0.005,
+            total_trials=total_trials
+        )
+        false_positives_simulation['data'].append(significant)
+
+    average = sum(false_positives_simulation['data']) / len(false_positives_simulation['data'])
+    print("Mean false positives per run: %s" % average)
+    histogram(false_positives_simulation)
 
     # false negatives exploration
     false_negatives_simulation = {'data': [], 'bins': 100,
@@ -144,6 +145,7 @@ def main():
     print("Mean false negatives per run: %s" % average)
     histogram(false_negatives_simulation)
 
+    plt.show()
 
 if __name__ == "__main__":
     main()
