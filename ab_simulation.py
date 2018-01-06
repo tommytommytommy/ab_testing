@@ -102,11 +102,11 @@ def main():
     total_runs = 100
 
     # A/B test parameters
-    baseline_odds = 0.05
-    test_odds_delta = -0.01
+    baseline_odds = 0.5
+    test_odds_delta = 0.05
     alpha = 0.05
     beta = 0.2
-    minimum_effect_size = 0.01
+    minimum_effect_size = 0.05
 
     # false positives exploration
     if test_odds_delta == 0:
@@ -139,6 +139,7 @@ def main():
                       'yLabel': 'Counts',
                       'title': 'A/B Experiments'}
 
+        # baseline + delta
         for runs in range(total_runs):
             significant = run_simulation(
                 baseline_odds=baseline_odds,
@@ -148,6 +149,19 @@ def main():
                 minimum_effect_size=minimum_effect_size,
                 total_trials=total_trials
             )
+            false_negatives_simulation['data'].append(total_trials - significant)
+
+        # baseline - delta
+        for runs in range(total_runs):
+            significant = run_simulation(
+                baseline_odds=baseline_odds,
+                test_odds_delta=-test_odds_delta,
+                alpha=alpha,
+                beta=beta,
+                minimum_effect_size=minimum_effect_size,
+                total_trials=total_trials
+            )
+
             false_negatives_simulation['data'].append(total_trials - significant)
 
         average = sum(false_negatives_simulation['data']) / len(false_negatives_simulation['data'])
