@@ -103,12 +103,14 @@ def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, 
 def main():
 
     # number of trials to perform for each simulation; each
-    # trial draws SAMPLE_SIZE samples (dynamically calculated based on A/B experiment parameters)
+    # trial draws 'samples_per_trial' samples (dynamically calculated based on A/B experiment parameters)
     total_trials = 100
 
     # number of times to run the simulation; each run contains total_trials number of trials
     # multiple runs allow us to observe the variance in false positives/negatives across runs
-    # on average, the number of false positives/negatives should correspond with the selected alpha/beta values
+    # any individual run may have a lower or higher number of false positives/negatives than specified by
+    # alpha and beta, but the average of false positives/negatives across runs should correspond to the
+    # selected alpha and beta values
     total_runs = 100
 
     # A/B test parameters
@@ -120,6 +122,8 @@ def main():
 
     samples_per_trial = calculate_sample_size(baseline_odds, alpha, beta, minimum_effect_size)
     print("Samples per trial: %s" % samples_per_trial)
+    print("Trials per run: %s" % total_trials)
+    print("Total runs: %s" % total_runs)
 
     # false positives exploration
     if test_odds_delta == 0:
