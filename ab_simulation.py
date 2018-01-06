@@ -24,6 +24,7 @@ def calculate_sample_size(baseline_odds, alpha, beta, minimum_effect_size):
 
     # f(alpha, beta, baseline_odds, minimum_effect_size) = samples_per_trial
     # http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power_print.html
+    # http://www.itl.nist.gov/div898/handbook/prc/section2/prc222.htm
     return int(2 * baseline_odds * (1 - baseline_odds) * ((norm.ppf(1-alpha/2) + norm.ppf(1-beta)) / minimum_effect_size)**2)
 
 
@@ -47,6 +48,7 @@ def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, 
         samples_per_trial = calculate_sample_size(baseline_odds, alpha, beta, minimum_effect_size)
 
     # chi-squared inputs, degrees of freedom
+    # http://www.ling.upenn.edu/%7Eclight/chisquared.htm
     # -----------------------------------
     # |         | test | control | TOTAL
     # -----------------------------------
@@ -150,6 +152,21 @@ def main():
         histogram(false_positives_simulation)
 
     # false negatives exploration
+    # draw samples using the thresholds p+test_odds_delta and p-test_odds_delta because if p != 0.5,
+    # changing 'p' by a constant 'test_odds_delta' does not increase the odds of observing heads
+    # by the same relative amount as it decreases the odds of observing tails
+    #
+    # p=baseline odds of observing heads; delta=change to baseline odds
+    # relative chance of observing heads: (p+delta) / p
+    # relative chance of observing tails: (1-(p+delta)) / p
+    # (p+delta) / p == (1-(p+delta)) / p if and only if p=0.5
+    #
+    # for example:
+    # if p=0.5, and delta=0.1: 0.4/0.5 == (1-0.4)/0.5
+    # if p=0.49, and delta=0.1: 0.39/0.49 != (1-0.39)/0.49
+    #
+    # if we sample only from p+delta or only from p-delta, we'll get more or fewer false negatives than
+    # expected based on the calculated sample size
     else:
         false_negatives_simulation = {'data': [], 'bins': 100,
                       'figure': 1,
