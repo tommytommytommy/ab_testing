@@ -101,49 +101,58 @@ def main():
     # on average, the number of false positives/negatives should correspond with the selected alpha/beta values
     total_runs = 100
 
-    false_positives_simulation = {'data': [], 'bins': 100,
-                  'figure': 0,
-                  'xLabel': 'False positives',
-                  'yLabel': 'Counts',
-                  'title': 'A/B Experiments'}
+    # A/B test parameters
+    baseline_odds = 0.05
+    test_odds_delta = -0.01
+    alpha = 0.05
+    beta = 0.2
+    minimum_effect_size = 0.01
 
     # false positives exploration
-    for runs in range(total_runs):
-        significant = run_simulation(
-            baseline_odds=0.01,
-            test_odds_delta=0,
-            alpha=0.05,
-            beta=0.2,
-            minimum_effect_size=0.005,
-            total_trials=total_trials
-        )
-        false_positives_simulation['data'].append(significant)
+    if test_odds_delta == 0:
+        false_positives_simulation = {'data': [], 'bins': 100,
+                      'figure': 0,
+                      'xLabel': 'False positives',
+                      'yLabel': 'Counts',
+                      'title': 'A/B Experiments'}
 
-    average = sum(false_positives_simulation['data']) / len(false_positives_simulation['data'])
-    print("Mean false positives per run: %s" % average)
-    histogram(false_positives_simulation)
+        for runs in range(total_runs):
+            significant = run_simulation(
+                baseline_odds=baseline_odds,
+                test_odds_delta=test_odds_delta,
+                alpha=alpha,
+                beta=beta,
+                minimum_effect_size=minimum_effect_size,
+                total_trials=total_trials
+            )
+            false_positives_simulation['data'].append(significant)
+
+        average = sum(false_positives_simulation['data']) / len(false_positives_simulation['data'])
+        print("Mean false positives per run: %s" % average)
+        histogram(false_positives_simulation)
 
     # false negatives exploration
-    false_negatives_simulation = {'data': [], 'bins': 100,
-                  'figure': 1,
-                  'xLabel': 'False negatives',
-                  'yLabel': 'Counts',
-                  'title': 'A/B Experiments'}
+    else:
+        false_negatives_simulation = {'data': [], 'bins': 100,
+                      'figure': 1,
+                      'xLabel': 'False negatives',
+                      'yLabel': 'Counts',
+                      'title': 'A/B Experiments'}
 
-    for runs in range(total_runs):
-        significant = run_simulation(
-            baseline_odds=0.01,
-            test_odds_delta=0.005,
-            alpha=0.05,
-            beta=0.2,
-            minimum_effect_size=0.005,
-            total_trials=total_trials
-        )
-        false_negatives_simulation['data'].append(total_trials - significant)
+        for runs in range(total_runs):
+            significant = run_simulation(
+                baseline_odds=baseline_odds,
+                test_odds_delta=test_odds_delta,
+                alpha=alpha,
+                beta=beta,
+                minimum_effect_size=minimum_effect_size,
+                total_trials=total_trials
+            )
+            false_negatives_simulation['data'].append(total_trials - significant)
 
-    average = sum(false_negatives_simulation['data']) / len(false_negatives_simulation['data'])
-    print("Mean false negatives per run: %s" % average)
-    histogram(false_negatives_simulation)
+        average = sum(false_negatives_simulation['data']) / len(false_negatives_simulation['data'])
+        print("Mean false negatives per run: %s" % average)
+        histogram(false_negatives_simulation)
 
     plt.show()
 
