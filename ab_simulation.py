@@ -16,6 +16,17 @@ def histogram(parameters):
     plt.suptitle(parameters['title'])
     plt.bar(center, hist, align='center', width=width)
 
+
+def calculate_sample_size(baseline_odds, alpha, beta, minimum_effect_size):
+
+    if baseline_odds is None or alpha is None or beta is None or minimum_effect_size is None:
+        return None
+
+    # f(alpha, beta, baseline_odds, minimum_effect_size) = samples_per_trial
+    # http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power_print.html
+    return int(2 * baseline_odds * (1 - baseline_odds) * ((norm.ppf(1-alpha/2) + norm.ppf(1-beta)) / minimum_effect_size)**2)
+
+
 # run_simulation()
 # simulate an A/B experiment by modeling a series of coin flips (draw samples from a binomial distribution)
 #
@@ -29,14 +40,13 @@ def histogram(parameters):
 #
 # outputs
 #   significant_differences: the number of trials that resulted in a statistically different number of heads
-def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, minimum_effect_size=0.005, total_trials=100):
+def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, minimum_effect_size=0.005,
+                   total_trials=100, samples_per_trial=None):
 
-    # f(alpha, beta, baseline_odds, minimum_effect_size) = samples_per_trial
-    # http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power_print.html
-    samples_per_trial = int(2 * baseline_odds * (1 - baseline_odds) * ((norm.ppf(1-alpha/2) + norm.ppf(1-beta)) / minimum_effect_size)**2)
+    if samples_per_trial == None:
+        samples_per_trial = calculate_sample_size(baseline_odds, alpha, beta, minimum_effect_size)
 
-    # chi-squared inputs
-    # expected counts, assuming independence
+    # chi-squared inputs, degrees of freedom
     # -----------------------------------
     # |         | test | control | TOTAL
     # -----------------------------------
@@ -46,7 +56,7 @@ def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, 
     # -----------------------------------
     # | TOTAL   | 100   | 100    | 200
     #
-    # degrees of freedom: (r - 1)(c - 1) = (2 - 1)(2 - 1) = 1
+    # degrees of freedom: (rows - 1)(columns - 1) = (2 - 1)(2 - 1) = 1
     degrees_of_freedom = 1
 
     significant_differences = 0
@@ -108,6 +118,9 @@ def main():
     beta = 0.2
     minimum_effect_size = 0.05
 
+    samples_per_trial = calculate_sample_size(baseline_odds, alpha, beta, minimum_effect_size)
+    print("Samples per trial: %s" % samples_per_trial)
+
     # false positives exploration
     if test_odds_delta == 0:
         false_positives_simulation = {'data': [], 'bins': 100,
@@ -123,7 +136,8 @@ def main():
                 alpha=alpha,
                 beta=beta,
                 minimum_effect_size=minimum_effect_size,
-                total_trials=total_trials
+                total_trials=total_trials,
+                samples_per_trial=samples_per_trial
             )
             false_positives_simulation['data'].append(significant)
 
@@ -147,7 +161,8 @@ def main():
                 alpha=alpha,
                 beta=beta,
                 minimum_effect_size=minimum_effect_size,
-                total_trials=total_trials
+                total_trials=total_trials,
+                samples_per_trial=samples_per_trial
             )
             false_negatives_simulation['data'].append(total_trials - significant)
 
@@ -159,7 +174,8 @@ def main():
                 alpha=alpha,
                 beta=beta,
                 minimum_effect_size=minimum_effect_size,
-                total_trials=total_trials
+                total_trials=total_trials,
+                samples_per_trial=samples_per_trial
             )
 
             false_negatives_simulation['data'].append(total_trials - significant)
