@@ -6,9 +6,9 @@
 \pagestyle{empty}
 
 % Define block styles
-\tikzstyle{decision} = [diamond, draw, fill=gray!40, 
+\tikzstyle{decision} = [diamond, draw, fill=gray!60, 
     text width=5.5em, text badly centered, node distance=4cm, inner sep=0pt]
-\tikzstyle{block} = [rectangle, draw, fill=gray!20, 
+\tikzstyle{block} = [rectangle, draw, fill=gray!30, 
     text width=7em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{line} = [draw, -latex']  
   
@@ -29,7 +29,7 @@
     \node [decision, left of=significant_no] (meaningful_but_insignificant) {difference practically meaningful?};
     \node [block, below of=meaningful_but_insignificant, node distance=4cm] (meaningful_but_insignificant_no) {interpret as no difference between the test and control};
     \node [decision, above of=meaningful_but_insignificant] (meaningful_but_insignificant_yes) {possibly underpowered; continue?};
-    \node [block, left of=meaningful_but_insignificant_yes, node distance=4cm] (unclear) {no clear interpretation};
+    \node [block, above of=meaningful_but_insignificant_yes, node distance=3.5cm] (unclear) {no clear interpretation};
     \node [block, right of=meaningful_but_insignificant_yes, node distance=4cm] (experiments_counter) {update minimum effect size; recalculate sample size; $n=n+1$};
     \node [block, right of=significant, node distance=10cm, text width=12em] (significant_yes) {control and test differ, and the difference between each group reflects by how much};
     \node [decision, below of=significant_yes, node distance=3cm] (false_positive) {p \textless\textless 0.05?};
