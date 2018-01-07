@@ -16,25 +16,25 @@
 \begin{tikzpicture}[node distance = 2cm, auto]
 
     \node [block] (init) {ask a question};
-    \node [block, below of=init] (metrics) {choose metrics to answer the question};
-    \node [block, below of=metrics] (baseline) {estimate baseline for each metric};
-    \node [block, below of=baseline] (min_effect) {determine minimum metrics change for success}; 
-    \node [block, below of=min_effect] (sample_size) {calculate sample size};
+    \node [block, right of=init, node distance=4cm] (metrics) {choose metrics to answer the question};
+    \node [block, right of=metrics, node distance=4cm] (baseline) {estimate baseline for each metric};
+    \node [block, right of=baseline, node distance=4cm, text width=8em] (min_effect) {determine minimum metrics change for success}; 
+    \node [block, right of=min_effect, node distance=4cm] (sample_size) {calculate sample size};
     \node [block, below of=sample_size] (release) {implement and release experiment};
-    \node [block, below of=release] (init_experiments) {n=1 (number of experiments=1)}; 
-    \node [block, below of=init_experiments, node distance=2.5cm] (experiments_counter) {update minimum effect size; recalculate sample size; $n=n+1$};
-    \node [block, right of=init_experiments, node distance=6cm] (collect) {collect samples};
+    \node [block, left of=release, node distance=4cm] (init_experiments) {n=1 (number of experiments=1)}; 
+    \node [block, left of=init_experiments, node distance=6cm] (collect) {collect samples};
     \node [decision, below left of=collect] (wait) {enough samples?};
     \node [decision, below of=wait] (significant) {statistically significant (p \textless $\frac{0.05}{n}$)?};
-    \node [block, left of=significant, node distance=10cm, text width=10em] (significant_no) {control and test differ by less than the minimum effect size, but the difference is NOT necessarily zero!};
-    \node [decision, below of=significant_no] (meaningful_but_insignificant) {difference practically meaningful?};
+    \node [block, left of=significant, node distance=5cm, text width=10em] (significant_no) {control and test differ by less than the minimum effect size, but the difference is NOT necessarily zero!};
+    \node [decision, left of=significant_no] (meaningful_but_insignificant) {difference practically meaningful?};
     \node [block, below of=meaningful_but_insignificant, node distance=4cm] (meaningful_but_insignificant_no) {interpret as no difference between the test and control};
-    \node [decision, right of=meaningful_but_insignificant, node distance=6.75cm, text width=7em] (meaningful_but_insignificant_yes) {possibly underpowered metric; consider continuing the experiment};
-    \node [block, right of=meaningful_but_insignificant_yes, node distance=5cm] (unclear) {no clear interpretation};
-    \node [block, right of=significant, node distance=10cm] (significant_yes) {control and test differ, and the difference in metrics between each group reflects by how much};
-    \node [decision, below of=significant_yes] (false_positive) {p \textless\textless 0.05?};
+    \node [decision, above of=meaningful_but_insignificant] (meaningful_but_insignificant_yes) {possibly underpowered; continue?};
+    \node [block, left of=meaningful_but_insignificant_yes, node distance=4cm] (unclear) {no clear interpretation};
+    \node [block, right of=meaningful_but_insignificant_yes, node distance=4cm] (experiments_counter) {update minimum effect size; recalculate sample size; $n=n+1$};
+    \node [block, right of=significant, node distance=10cm, text width=12em] (significant_yes) {control and test differ, and the difference between each group reflects by how much};
+    \node [decision, below of=significant_yes, node distance=3cm] (false_positive) {p \textless\textless 0.05?};
     \node [decision, left of=false_positive, node distance=4cm] (false_positive_no) {possible false positive; rerun?};
-    \node [block, above of=false_positive_no, node distance=8cm] (increment_experiment) {$n=n+1$};
+    \node [block, above of=false_positive_no, node distance=7cm] (increment_experiment) {$n=n+1$};
     \node [block, right of=false_positive, node distance=4cm] (false_positive_yes) {unlikely false positive};
     \node [block, below of=false_positive, node distance=2.5cm] (global_release) {global release decision};
     
@@ -44,7 +44,7 @@
     \path [line] (min_effect) -- (sample_size);
     \path [line] (sample_size) -- (release);
     \path [line] (collect) -- (wait);
-    \path [line] (experiments_counter) -- (collect);
+    \path [line] (experiments_counter) |- (collect);
     \path [line] (wait) -| node {no}(collect);
     \path [line] (wait) -- node {yes}(significant);
     \path [line] (release) -- (init_experiments);
@@ -54,16 +54,16 @@
     \path [line] (meaningful_but_insignificant) -- node {no}(meaningful_but_insignificant_no);
     \path [line] (meaningful_but_insignificant) -- node {yes}(meaningful_but_insignificant_yes);
     \path [line] (meaningful_but_insignificant_yes) -- node {no}(unclear);
-    \path [line, dashed] (meaningful_but_insignificant_yes) -- node {yes}(experiments_counter);
+    \path [line] (meaningful_but_insignificant_yes) -- node {yes}(experiments_counter);
     \path [line] (significant) -- node {yes}(significant_yes);
     \path [line] (significant_yes) -- (false_positive);
     \path [line] (false_positive) -- node {no}(false_positive_no);
     \path [line, dashed] (false_positive_no) -- (increment_experiment);
-    \path [line] (increment_experiment) |- (collect);
+    \path [line] (increment_experiment) -- (collect);
     \path [line] (false_positive) -- node {yes}(false_positive_yes);
     \path [line] (false_positive_yes) |- (global_release);
     \path [line] (false_positive_no) |- node {no}(global_release);
-    \path [line] (meaningful_but_insignificant_no) -| (global_release);
+    \path [line] (meaningful_but_insignificant_no) |- (global_release);
 
 \end{tikzpicture}
 }
