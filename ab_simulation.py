@@ -162,8 +162,8 @@ def main():
     # (p+delta) / p == (1-(p+delta)) / p if and only if p=0.5
     #
     # for example:
-    # if p=0.5, and delta=0.1: 0.4/0.5 == (1-0.4)/0.5
-    # if p=0.49, and delta=0.1: 0.39/0.49 != (1-0.39)/0.49
+    # if p=0.5, and delta=0.1: (0.4+0.1)/0.5 == (1-(0.4+0.1))/0.5
+    # if p=0.49, and delta=0.1: (0.49+0.1)/0.49 != (1-(0.49+0.1))/0.49
     #
     # if we sample only from p+delta or only from p-delta, we'll get more or fewer false negatives than
     # expected based on the calculated sample size
