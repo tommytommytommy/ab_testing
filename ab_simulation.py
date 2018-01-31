@@ -102,6 +102,16 @@ def run_simulation(baseline_odds=0.01, test_odds_delta=0, alpha=0.05, beta=0.2, 
     return significant_differences
 
 
+def generate_normal_distribution_ppf():
+
+    inverse_cdf_values = []
+
+    for x in range(0, 1000, 1):
+        inverse_cdf_values.append(norm.ppf(x / 1000))
+
+    print(inverse_cdf_values)
+
+
 def main():
 
     # number of trials to perform for each simulation; each
